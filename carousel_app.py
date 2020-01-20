@@ -2,29 +2,28 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
-class Main(Gtk.Window):
-
-    def __init__(self):
-
-        Gtk.Window.__init__(self, title="CIS")
-        self.set_default_size(500,500)
-        self.box1 = Gtk.Box(spacing = 10)
-        
-
-        self.button1 = Gtk.Button(label="Pump 1")
-        self.button1.connect("clicked",self.click_b)
+class Handler:
     
-        self.add(self.box1)
-        self.box1.add(self.button1)
-        
-        self.button2 = Gtk.Button(label = "Pump2")
-        self.button2.connect("clicked",self.click_b)
-        self.box1.add(self.button2)
+    def onDestroy(self, *args):
+        Gtk.main_quit()
 
-    def click_b(self,widget):
-        print("clicked")
-win = Main()
-win.connect("destroy", Gtk.main_quit)
-win.show_all()
+    def onButtonPressed(self, widget):
+        b = Gtk.Builder()
+        b.add_from_file("window2.glade")
+        win = b.get_object("window2")
+        win.show_all()
+
+    def onImagePressed(self,widget,udata):
+        b = Gtk.Builder()
+        b.add_from_file("window2.glade")
+        win = b.get_object("window2")
+        win.show_all()
+
+builder = Gtk.Builder()
+builder.add_from_file("example.glade")
+builder.connect_signals(Handler())
+
+window = builder.get_object("window1")
+window.show_all()
+
 Gtk.main()
-
