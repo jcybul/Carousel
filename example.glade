@@ -285,6 +285,19 @@
                         <property name="top_attach">5</property>
                       </packing>
                     </child>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="label" translatable="yes">Export CSV</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <signal name="released" handler="exportCsv" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -779,7 +792,7 @@
                     <property name="valign">baseline</property>
                     <property name="margin_left">79</property>
                     <property name="margin_top">20</property>
-                    <property name="label" translatable="yes">Heigth recorded: </property>
+                    <property name="label" translatable="yes">Height recorded: </property>
                   </object>
                   <packing>
                     <property name="expand">False</property>

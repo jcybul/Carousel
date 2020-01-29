@@ -7,12 +7,18 @@ import time
 import MySQLdb
 from time import sleep
 import time    
+import csv
+import datetime
+from threading import Thread
+from multiprocessing import Process
 
-in1 = 2
-in2 = 3
+
+in1 = 12
+in2 = 13
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(in1,GPIO.OUT)
 GPIO.setup(in2,GPIO.OUT)
+
 
 def setToolTip():
     db = MySQLdb.connect(host="localhost",    # your host, usually localhost
@@ -20,16 +26,22 @@ def setToolTip():
                      passwd="iqp2020",  # your password
                      db="mydb")    
     cur = db.cursor(MySQLdb.cursors.DictCursor)
-
-    for x in range (1, 24):
+    cur2 = db.cursor(MySQLdb.cursors.DictCursor)
+    for x in range (1, 25):
+        query2 = "Select Height,date_recorded from Plant_records where barrel_num = %s and date_recorded = (SELECT MAX(date_recorded) from Plant_records where barrel_num = %s group by barrel_num)"
         query = "SELECT *  from Carousel WHERE Barrel_num = %s"
         cur.execute(query,[str(x)])
+        cur2.execute(query2,([str(x)],[str(x)]))
+        result2 = cur2.fetchall()
         result = cur.fetchall()
         sstring = "pot_" +str(x)
+        s =""
         temp = builder.get_object(sstring)
         for t in result:
-            print(t) 
-        s = "pot_"+str(x) +" " +str(t)   
+            print("Number"+ str(t['Barrel_num']))
+            s = " Pot Number: " + str(t['Barrel_num']) +" \n Date Planted: " + str(t['Date_planted'])+"\n Seed type: " + str(t['Seed_type']) +" \n Water EC: " + str(t['Water_ec']) +" \n Quantity: " + str(t['Water_Liters'])
+        for f in result2: 
+            s =  s + "\n Recorded Height(cm): "+ str(f['Height'])  + "\n Height recorded on: " + str(f['date_recorded'])
         temp.set_tooltip_text(s)
 
 class Handler:
@@ -60,6 +72,10 @@ class Handler:
         except:
             print('Error:')
         finally:
+            comments.set_text("")
+            b.set_text("")
+            h.set_text("")
+            setToolTip()
             db.close()
     def buttonUpdate(self,widget):
         db = MySQLdb.connect(host="localhost",    # your host, usually localhost
@@ -81,6 +97,9 @@ class Handler:
         except:
             print("ERROR: **********")
         finally:
+            water_ec.set_text("")
+            q_water.set_text("")
+            setToolTip()
             db.close()
 
     def pumpOneOpen(self,sw,data):
@@ -92,6 +111,33 @@ class Handler:
             GPIO.output(in1,GPIO.LOW)
             GPIO.output(in2,GPIO.HIGH)
             time.sleep(5)
+
+    def exportCsv(self,widget):
+
+
+        fileName = 'CSV/Carousel' +  time.strftime('%Y-%m-%d %H-%M-%S')
+        db = MySQLdb.connect(host="localhost",    # your host, usually localhost
+                     user="root",         # your username
+                     passwd="iqp2020",  # your password
+                     db="mydb")    
+        cur = db.cursor()
+
+        query = "SELECT * from Plant_records"
+        try:
+            cur.execute(query)
+            result = cur.fetchall()
+
+            for r in result:
+                print(r)
+                with open(fileName +'.csv', 'a') as Carousel:
+                    employee_writer = csv.writer(Carousel, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    employee_writer.writerow([r[0],r[1],r[2]])
+        finally:
+            cur.close
+            db.close
+
+
+
 builder = Gtk.Builder()
 builder.add_from_file("example.glade")
 
@@ -107,7 +153,32 @@ h = builder.get_object("h_entry")
 window = builder.get_object("window1")
 window.show_all()
 
-Gtk.main()
+
+#today_date = datetime.date(datetime.now()) 
+#irrigation_time = datetime.datetime.combine(today_date, datetime.time(7, 00))
+
+irrigation = 0
+now = datetime.datetime.now()
+seven_am = now.replace(hour=11, minute=52, second=0, microsecond=0)
+
+if datetime.datetime.now == seven_am:
+    print("timeeeeee")
+#while():
+ #   print("timee")
+count = 0
+def testthread():
+    count = 0
+    while(1):
+        count += 1
+        print("succes")
+        if count > 200:
+            break
+Process(target=testthread()).start()
+Process(target=Gtk.main()).start()
+
+
+
+#Gtk.main()
 
 
 
