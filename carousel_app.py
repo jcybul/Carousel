@@ -92,14 +92,14 @@ def irrigate():
                 irrigate_close(ec)
                 print (rfid + " ec 0")            
 def irrigate_open(ec):
-    if(ec == 0):
+    if(ec == 2.3):
         GPIO.output(in1,GPIO.HIGH)
         GPIO.output(in2,GPIO.LOW)
     elif(ec == 0):
         GPIO.output(in3,GPIO.HIGH)
         GPIO.output(in4,GPIO.LOW)
 def irrigate_close(ec):
-    if(ec == 0):
+    if(ec == 2.3):
         GPIO.output(in1,GPIO.LOW)
         GPIO.output(in2,GPIO.HIGH)
     elif(ec == 0):
