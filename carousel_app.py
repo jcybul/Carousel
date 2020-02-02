@@ -15,10 +15,20 @@ from multiprocessing import Process
 
 in1 = 12
 in2 = 13
+in3 = 16
+in4 = 19
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(in1,GPIO.OUT)
 GPIO.setup(in2,GPIO.OUT)
+GPIO.setup(in3,GPIO.OUT)
+GPIO.setup(in4,GPIO.OUT)
+GPIO.setup(23,GPIO.IN,pull_up_down = GPIO.PUD_UP)
+global count 
+count = 0
 
+def countPulse(channel):
+    global count
+    count= count+1
 
 def setToolTip():
     db = MySQLdb.connect(host="localhost",    # your host, usually localhost
@@ -47,6 +57,8 @@ def setToolTip():
 class Handler:
     sw = Gtk.Switch()
     sw.set_active(True)
+    sw2 = Gtk.Switch()
+    sw2.set_active(True)
     def onDestroy(self, *args):
         Gtk.main_quit()
 
@@ -103,13 +115,26 @@ class Handler:
             db.close()
 
     def pumpOneOpen(self,sw,data):
-        if sw.get_active():
-            GPIO.output(in1,GPIO.HIGH)
-            GPIO.output(in2,GPIO.LOW)
+        GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse)
+        GPIO.output(in1,GPIO.HIGH)
+        GPIO.output(in2,GPIO.LOW)
+        while(count/(60 *7.5) < 0.5):
+                print("irrigating")
+                print(count)
+        GPIO.output(in1,GPIO.LOW)
+        GPIO.output(in2,GPIO.HIGH)
+        time.sleep(5)
+        global count 
+        count =0
+
+    def pumpTwoOpen(self,sw2,data):
+        if sw2.get_active():
+            GPIO.output(in3,GPIO.HIGH)
+            GPIO.output(in4,GPIO.LOW)
             time.sleep(5)
         else: 
-            GPIO.output(in1,GPIO.LOW)
-            GPIO.output(in2,GPIO.HIGH)
+            GPIO.output(in3,GPIO.LOW)
+            GPIO.output(in4,GPIO.HIGH)
             time.sleep(5)
 
     def exportCsv(self,widget):
@@ -154,24 +179,21 @@ window = builder.get_object("window1")
 window.show_all()
 
 
-#today_date = datetime.date(datetime.now()) 
-#irrigation_time = datetime.datetime.combine(today_date, datetime.time(7, 00))
-
 irrigation = 0
 now = datetime.datetime.now()
 seven_am = now.replace(hour=11, minute=52, second=0, microsecond=0)
 
 if datetime.datetime.now == seven_am:
     print("timeeeeee")
-#while():
- #   print("timee")
-count = 0
+count2 = 0
+
+
 def testthread():
-    count = 0
+    count2 = 0
     while(1):
-        count += 1
+        count2 += 1
         print("succes")
-        if count > 200:
+        if count2 > 200:
             break
 Process(target=testthread()).start()
 Process(target=Gtk.main()).start()
