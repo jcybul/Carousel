@@ -1,4 +1,5 @@
 import gi
+import sys
 from gi.repository import GObject
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -11,7 +12,7 @@ import csv
 import datetime
 from threading import Thread
 from multiprocessing import Process
-
+from mfrc522 import SimpleMFRC522
 
 in1 = 12
 in2 = 13
@@ -23,12 +24,86 @@ GPIO.setup(in2,GPIO.OUT)
 GPIO.setup(in3,GPIO.OUT)
 GPIO.setup(in4,GPIO.OUT)
 GPIO.setup(23,GPIO.IN,pull_up_down = GPIO.PUD_UP)
+GPIO.setup(18,GPIO.IN,pull_up_down = GPIO.PUD_UP)
 global count 
 count = 0
+
+global count2 
+count2 = 0
 
 def countPulse(channel):
     global count
     count= count+1
+
+def countPulse2(channel):
+    global count2
+    count2= count2+1
+
+def irrigate():
+    print("in irrigation")
+    pot_count = 1
+    reader = SimpleMFRC522()
+    print ("reading")
+    GPIO.add_event_detect(18,GPIO.FALLING, callback = countPulse2)
+    GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse)
+    while(pot_count < 24):
+        global count,count2 
+        count =0
+        count2 = 0
+        print(" in while")
+        try:
+            id,rfid = reader.read()
+            print(rfid)
+        except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
+            print("Keyboard interrupt")
+            print(rfid)
+        finally:   
+         if(rfid > 0 and rfid < 25): 
+            pot_count = pot_count+1
+            db = MySQLdb.connect(host="localhost",    # your host, usually localhost
+                             user="root",         # your username
+                             passwd="iqp2020",  # your password
+                             db="mydb")    
+            cur = db.cursor(MySQLdb.cursors.DictCursor)
+            try:
+                query = "SELECT * from Carousel where barrel_num = %s"
+                cur.execute(query,[rfid])
+                result = cur.fetchall()
+                for r in result:
+                    q = (r['Water_Liters'])
+                    ec = (r['Water_ec'])
+            finally:
+                db.close()
+
+            if(ec == 2.3):
+                print(rfid + " ec 2.3")
+                while(count/(60 *7.5) < q):
+                    print(count)
+                    irrigate_open(ec)
+                irrigate_close(ec)
+            elif ( ec == 0):
+               
+                while(count2/(60 *7.5) < q):
+                    print(count2/(60*7.5))
+                    irrigate_open(ec)
+                irrigate_close(ec)
+                print (rfid + " ec 0")
+            
+def irrigate_open(ec):
+    if(ec == 2.3):
+        GPIO.output(in1,GPIO.HIGH)
+        GPIO.output(in2,GPIO.LOW)
+    elif(ec == 0):
+        GPIO.output(in3,GPIO.HIGH)
+        GPIO.output(in4,GPIO.LOW)
+def irrigate_close(ec):
+    if(ec == 2.3):
+        GPIO.output(in1,GPIO.LOW)
+        GPIO.output(in2,GPIO.HIGH)
+    elif(ec == 0):
+        GPIO.output(in3,GPIO.LOW)
+        GPIO.output(in4,GPIO.HIGH)
+
 
 def setToolTip():
     db = MySQLdb.connect(host="localhost",    # your host, usually localhost
@@ -60,8 +135,12 @@ class Handler:
     sw2 = Gtk.Switch()
     sw2.set_active(True)
     def onDestroy(self, *args):
+        print("cleanup")
+        GPIO.cleanup()
         Gtk.main_quit()
-
+    
+    def irr(self,widget):
+        irrigate()
     def onButtonPressed(self, widget):
         now = time.strftime('%Y-%m-%d %H-%M-%S')
         db = MySQLdb.connect(host="localhost",    # your host, usually localhost
@@ -123,8 +202,7 @@ class Handler:
                 print(count)
         GPIO.output(in1,GPIO.LOW)
         GPIO.output(in2,GPIO.HIGH)
-        time.sleep(5)
-        global count 
+        time.sleep(5) 
         count =0
 
     def pumpTwoOpen(self,sw2,data):
@@ -199,9 +277,8 @@ Process(target=testthread()).start()
 Process(target=Gtk.main()).start()
 
 
-
 #Gtk.main()
-
+GPIO.cleanup()
 
 
 
