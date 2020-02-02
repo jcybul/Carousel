@@ -46,7 +46,9 @@ def irrigate():
     print ("reading")
     GPIO.add_event_detect(18,GPIO.FALLING, callback = countPulse2)
     GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse)
+    
     while(pot_count < 24):
+        pot_count = pot_count+1
         global count,count2 
         count =0
         count2 = 0
@@ -57,9 +59,10 @@ def irrigate():
         except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
             print("Keyboard interrupt")
             print(rfid)
-        finally:   
-         if(rfid > 0 and rfid < 25): 
-            pot_count = pot_count+1
+        finally:
+    
+         if(int(rfid) > 0 and int(rfid) < 25): 
+             
             db = MySQLdb.connect(host="localhost",    # your host, usually localhost
                              user="root",         # your username
                              passwd="iqp2020",  # your password
@@ -87,17 +90,16 @@ def irrigate():
                     print(count2/(60*7.5))
                     irrigate_open(ec)
                 irrigate_close(ec)
-                print (rfid + " ec 0")
-            
+                print (rfid + " ec 0")            
 def irrigate_open(ec):
-    if(ec == 2.3):
+    if(ec == 0):
         GPIO.output(in1,GPIO.HIGH)
         GPIO.output(in2,GPIO.LOW)
     elif(ec == 0):
         GPIO.output(in3,GPIO.HIGH)
         GPIO.output(in4,GPIO.LOW)
 def irrigate_close(ec):
-    if(ec == 2.3):
+    if(ec == 0):
         GPIO.output(in1,GPIO.LOW)
         GPIO.output(in2,GPIO.HIGH)
     elif(ec == 0):
@@ -194,16 +196,14 @@ class Handler:
             db.close()
 
     def pumpOneOpen(self,sw,data):
-        GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse)
-        GPIO.output(in1,GPIO.HIGH)
-        GPIO.output(in2,GPIO.LOW)
-        while(count/(60 *7.5) < 0.5):
-                print("irrigating")
-                print(count)
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.HIGH)
-        time.sleep(5) 
-        count =0
+        
+        if sw.get_active(): 
+            GPIO.output(in1,GPIO.HIGH)
+            GPIO.output(in2,GPIO.LOW)
+        else:
+            GPIO.output(in1,GPIO.LOW)
+            GPIO.output(in2,GPIO.HIGH)
+            time.sleep(5) 
 
     def pumpTwoOpen(self,sw2,data):
         if sw2.get_active():
