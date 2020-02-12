@@ -25,8 +25,7 @@ A side from that a soldering board extension and a soldering iron is recommended
 
 The wiring of the system can be seen in the picture below:
 
-
-![Wiring Diagram](/Images/Carousel_Wiring_diagram_bb.png)
+![Wiring Diagram](/Images/Carousel_Wiring_diagram_bb.png) 
 
 [Refer to the fritzing file for more detailed information]( /Carousel_Wiring_diagram.fzz)
 
@@ -36,5 +35,8 @@ The wiring of the system can be seen in the picture below:
 The database used for this proyect is a MySql database running locally on the Raspberry Pi, which makes acces to it very simple, this database is only running when the Raspberry Pi is tunrned on.
 
 # USER-INTERFACE
+
+
+(/Images/UI_ITERATION.png) 
 
 The user-interface was created using python, GTK, which is a free and open-source cross-platform widget toolkit for creating graphical user interfaces ,and glade for the design.
