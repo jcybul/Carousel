@@ -37,6 +37,6 @@ The database used for this proyect is a MySql database running locally on the Ra
 # USER-INTERFACE
 
 
-(/Images/UI_ITERATION.png) 
+![UI](/Images/UI_ITERATION.png) 
 
 The user-interface was created using python, GTK, which is a free and open-source cross-platform widget toolkit for creating graphical user interfaces ,and glade for the design.
