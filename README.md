@@ -2,7 +2,7 @@
 
 The Carousel irrigation system is an agricultural research system used to measure the effects of different water salinities on plants.
 
-![Flow chart](/Images/CIS Flowchart (1).png)
+![Flow chart](/Images/Flow_Chart.png)
 
 
 The system divides in three main components:
@@ -26,7 +26,7 @@ A side from that a soldering board extension and a soldering iron is recommended
 The wiring of the system can be seen in the picture below:
 
 
-![Wiring Diagram](/Carousel_Wiring_diagram_bb.png)
+![Wiring Diagram](/Images/Carousel_Wiring_diagram_bb.png)
 
 [Refer to the fritzing file for more detailed information]( /Carousel_Wiring_diagram.fzz)
 
