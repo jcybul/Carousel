@@ -25,7 +25,7 @@ The wiring of the system can be seen in the picture below:
 
 ![Wiring Diagram](/Carousel_Wiring_diagram_bb.png)
 
-Refer to the fritzing file for more detailed information ( /Carousel_Wiring_diagram.fzz)
+[Refer to the fritzing file for more detailed information]( /Carousel_Wiring_diagram.fzz)
 
 
 # DATABASE
