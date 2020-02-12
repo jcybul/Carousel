@@ -6,10 +6,8 @@ The system divides in three main components:
    1. Hardware 
    2. Database 
    3. User-interface 
-
-# H1
-HARDWARE
-# H1
+   
+# HARDWARE
 
 This project is meant to create a supplementary automatic irrigation system to the existing carousel, using the spinning capabilities it already has. For this project we will be using a raspberry pi 4 with Raspbian as the operating system. The hardware components required are the following. 
 
@@ -26,3 +24,7 @@ The wiring of the system can be seen in the picture below:
 
 
 ![Wiring Diagram](/Carousel_Wiring_diagram_bb.png)
+
+# DATABASE
+
+The database used for this proyect is a MySql database running locally on the Raspberry Pi, which makes acces to it very simple, this database is only running when the Raspberry Pi is tunrned on.
