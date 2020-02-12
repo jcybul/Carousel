@@ -2,7 +2,7 @@
 
 The Carousel irrigation system is an agricultural research system used to measure the effects of different water salinities on plants.
 
-![Flow chart](/images/CIS Flowchart (1).png)
+![Flow chart](/Images/CIS Flowchart (1).png)
 
 
 The system divides in three main components:
