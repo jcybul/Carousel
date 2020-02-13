@@ -32,7 +32,7 @@ The wiring of the system can be seen in the picture below:
 
 # DATABASE
 
-The database used for this proyect is a MySql database running locally on the Raspberry Pi, which makes acces to it very simple, this database is only running when the Raspberry Pi is tunrned on.
+The database used for this proyect is a MySql database running locally on the Raspberry Pi, which makes acces to it very simple, this database is only running when the Raspberry Pi is turned on.
 
 # USER-INTERFACE
 
