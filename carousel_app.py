@@ -41,7 +41,8 @@ def countPulse2(channel):
 
 def irrigate():
     print("in irrigation")
-    pot_count = 1
+    
+    pot_count = 0
     reader = SimpleMFRC522()
     print ("reading")
     GPIO.add_event_detect(18,GPIO.FALLING, callback = countPulse2)
@@ -49,6 +50,9 @@ def irrigate():
     
     while(pot_count < 24):
         pot_count = pot_count+1
+        progress.pulse()
+        progress.set_fraction(0.0416)
+        print("the Pot_count is: " + str(pot_count))
         global count,count2 
         count =0
         count2 = 0
@@ -81,11 +85,10 @@ def irrigate():
             if(ec == 2.3):
                 print(rfid + " ec 2.3")
                 while(count/(60 *7.5) < q):
-                    print(count)
+                    print(count/(60 *7.5))
                     irrigate_open(ec)
                 irrigate_close(ec)
-            elif ( ec == 0):
-               
+            elif ( ec == 0): 
                 while(count2/(60 *7.5) < q):
                     print(count2/(60*7.5))
                     irrigate_open(ec)
@@ -181,9 +184,9 @@ class Handler:
              
              new_water_ec = water_ec.get_text()
              new_water_q = q_water.get_text()
-             combo_val = combo.get_active_text()
+             combo_val = (combo.get_text())
              print(combo_val)
-             query = "UPDATE Carousel SET Water_ec = %s , Water_Liters = %s WHERE Barrel_num = %s"
+             query = "UPDATE Carousel SET Water_ec = %s , Water_Liters = %s WHERE barrel_num = %s"
              cur.execute(query,(new_water_ec,new_water_q,combo_val))
              db.commit()
              print("Row updates")
@@ -192,6 +195,7 @@ class Handler:
         finally:
             water_ec.set_text("")
             q_water.set_text("")
+            combo.set_text("")
             setToolTip()
             db.close()
 
@@ -240,15 +244,26 @@ class Handler:
             db.close
 
 
+    def newExperimentButton(self,widget):
+        print("in new experiment")
+        exWind.show_all()
+        window.hide()
+    def back(self,widget):
+        window.show_all()
+        exWind.hide()
 
 builder = Gtk.Builder()
-builder.add_from_file("example.glade")
-
+builder.add_from_file("app.glade")
+builder.add_from_file("warning.glade")
 builder.connect_signals(Handler())
 setToolTip()
 
+
+progress = builder.get_object("progress_bar1")
+exWind = builder.get_object("window2")
+progress.set_pulse_step(0)
 comments = builder.get_object("comment_entry")
-combo = builder.get_object("combo_box1")
+combo = builder.get_object("update_pot")
 b = builder.get_object("b_entry")
 water_ec = builder.get_object("water_ec")
 q_water = builder.get_object("q_water")
@@ -266,18 +281,7 @@ if datetime.datetime.now == seven_am:
 count2 = 0
 
 
-def testthread():
-    count2 = 0
-    while(1):
-        count2 += 1
-        print("succes")
-        if count2 > 200:
-            break
-Process(target=testthread()).start()
-Process(target=Gtk.main()).start()
-
-
-#Gtk.main()
+Gtk.main()
 GPIO.cleanup()
 
 
