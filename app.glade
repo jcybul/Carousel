@@ -64,7 +64,7 @@
                     <property name="receives_default">True</property>
                     <property name="margin_top">5</property>
                     <property name="margin_bottom">5</property>
-                    <signal name="released" handler="newExperimentButton" swapped="no"/>
+                    <signal name="released" handler="warning" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>

@@ -244,10 +244,10 @@ class Handler:
             db.close
 
 
-    def newExperimentButton(self,widget):
+    def warning(self,exWind):
         print("in new experiment")
-        exWind.show_all()
-        window.hide()
+       # exWind.show_all()
+       # window.hide()
     def back(self,widget):
         window.show_all()
         exWind.hide()
@@ -269,6 +269,7 @@ water_ec = builder.get_object("water_ec")
 q_water = builder.get_object("q_water")
 h = builder.get_object("h_entry")
 window = builder.get_object("window1")
+hbox = builder.get_object("hbox")
 window.show_all()
 
 
