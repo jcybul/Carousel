@@ -18,6 +18,7 @@ in1 = 12
 in2 = 13
 in3 = 16
 in4 = 19
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(in1,GPIO.OUT)
 GPIO.setup(in2,GPIO.OUT)
@@ -31,6 +32,9 @@ count = 0
 global count2 
 count2 = 0
 
+
+
+
 def countPulse(channel):
     global count
     count= count+1
@@ -39,15 +43,19 @@ def countPulse2(channel):
     global count2
     count2= count2+1
 
+GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse2)
+GPIO.add_event_detect(18,GPIO.FALLING, callback = countPulse)
+
+
+
 def irrigate():
     print("in irrigation")
     
     pot_count = 0
     reader = SimpleMFRC522()
     print ("reading")
-    GPIO.add_event_detect(18,GPIO.FALLING, callback = countPulse2)
-    GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse)
-    
+   
+       
     while(pot_count < 24):
         pot_count = pot_count+1
         progress.pulse()
@@ -58,14 +66,17 @@ def irrigate():
         count2 = 0
         print(" in while")
         try:
-            id,rfid = reader.read()
+            print("  in try  ")
+            id,rfid = reader.read_no_block()
             print(rfid)
-        except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
-            print("Keyboard interrupt")
-            print(rfid)
+        except KeyboardInterrupt:
+            print("interrupt")
+
         finally:
-    
-         if(int(rfid) > 0 and int(rfid) < 25): 
+            print("cleaned")
+            GPIO.cleanup()
+
+        if(int(rfid) > 0 and int(rfid) < 25): 
              
             db = MySQLdb.connect(host="localhost",    # your host, usually localhost
                              user="root",         # your username
@@ -244,23 +255,28 @@ class Handler:
             db.close
 
 
-    def warning(self,exWind):
-        print("in new experiment")
-       # exWind.show_all()
-       # window.hide()
+    def warning(self,widget):
+        warning.show_all()
+        window.hide()
     def back(self,widget):
         window.show_all()
-        exWind.hide()
+        warning.hide()
+    def continue1(self,widget):
+        exWind.show_all()
+        warning.hide()
 
 builder = Gtk.Builder()
 builder.add_from_file("app.glade")
+builder.connect_signals(Handler())
+
 builder.add_from_file("warning.glade")
+builder.connect_signals(Handler())
+builder.add_from_file("newExperiment.glade")
 builder.connect_signals(Handler())
 setToolTip()
 
-
 progress = builder.get_object("progress_bar1")
-exWind = builder.get_object("window2")
+warning = builder.get_object("window2")
 progress.set_pulse_step(0)
 comments = builder.get_object("comment_entry")
 combo = builder.get_object("update_pot")
@@ -269,9 +285,8 @@ water_ec = builder.get_object("water_ec")
 q_water = builder.get_object("q_water")
 h = builder.get_object("h_entry")
 window = builder.get_object("window1")
-hbox = builder.get_object("hbox")
+exWind = builder.get_object("window3")
 window.show_all()
-
 
 irrigation = 0
 now = datetime.datetime.now()
@@ -281,9 +296,7 @@ if datetime.datetime.now == seven_am:
     print("timeeeeee")
 count2 = 0
 
-
 Gtk.main()
-GPIO.cleanup()
 
 
 

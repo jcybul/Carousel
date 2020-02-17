@@ -69,6 +69,7 @@ all your data will be deleted and a CSV will be created</property>
                 <property name="receives_default">True</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
+                <signal name="released" handler="continue1" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
