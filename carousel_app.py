@@ -18,21 +18,23 @@ in1 = 12
 in2 = 13
 in3 = 16
 in4 = 19
+def GPIOsetup(): 
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(in1,GPIO.OUT)
+    GPIO.setup(in2,GPIO.OUT)
+    GPIO.setup(in3,GPIO.OUT)
+    GPIO.setup(in4,GPIO.OUT)
+    GPIO.setup(4,GPIO.IN,pull_up_down = GPIO.PUD_UP)
+    GPIO.setup(17,GPIO.IN,pull_up_down = GPIO.PUD_UP)
+    GPIO.add_event_detect(4,GPIO.FALLING, callback = countPulse2)
+    GPIO.add_event_detect(17,GPIO.FALLING, callback = countPulse)
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(in1,GPIO.OUT)
-GPIO.setup(in2,GPIO.OUT)
-GPIO.setup(in3,GPIO.OUT)
-GPIO.setup(in4,GPIO.OUT)
-GPIO.setup(23,GPIO.IN,pull_up_down = GPIO.PUD_UP)
-GPIO.setup(18,GPIO.IN,pull_up_down = GPIO.PUD_UP)
+
 global count 
 count = 0
 
 global count2 
 count2 = 0
-
-
 
 
 def countPulse(channel):
@@ -43,82 +45,95 @@ def countPulse2(channel):
     global count2
     count2= count2+1
 
-GPIO.add_event_detect(23,GPIO.FALLING, callback = countPulse2)
-GPIO.add_event_detect(18,GPIO.FALLING, callback = countPulse)
 
-
-
+GPIOsetup()
 def irrigate():
-    print("in irrigation")
-    
-    pot_count = 0
-    reader = SimpleMFRC522()
-    print ("reading")
-   
+   # print("in irrigation")
+       pot_count = 0
        
-    while(pot_count < 24):
-        pot_count = pot_count+1
-        progress.pulse()
-        progress.set_fraction(0.0416)
+   # print ("reading")
+   # while(pot_count < 2):
+       
+       while(pot_count < 2):
+        GPIO.cleanup()   
+        reader = SimpleMFRC522()  
         print("the Pot_count is: " + str(pot_count))
         global count,count2 
-        count =0
-        count2 = 0
-        print(" in while")
+       
+       
         try:
-            print("  in try  ")
-            id,rfid = reader.read_no_block()
+            print(" Waiting to read ")
+            id,rfid = reader.read()
             print(rfid)
-        except KeyboardInterrupt:
-            print("interrupt")
-
         finally:
             print("cleaned")
             GPIO.cleanup()
-
-        if(int(rfid) > 0 and int(rfid) < 25): 
-             
-            db = MySQLdb.connect(host="localhost",    # your host, usually localhost
+        time.sleep(1)
+        try:
+            if(int(rfid) > 0 and int(rfid) < 25): 
+                pot_count = pot_count+1
+                GPIOsetup()
+                print ("Read pot: " + rfid)
+                try:
+                    w = int(rfid)
+                except ValueError:
+                    print("not transformable int")
+                print("coneverted")
+                water = ((w -2) + 24 ) % 24
+                print ( "Water pot number  " + str(water))
+                time.sleep(5)
+                db = MySQLdb.connect(host="localhost",    # your host, usually localhost
                              user="root",         # your username
                              passwd="iqp2020",  # your password
                              db="mydb")    
-            cur = db.cursor(MySQLdb.cursors.DictCursor)
-            try:
-                query = "SELECT * from Carousel where barrel_num = %s"
-                cur.execute(query,[rfid])
-                result = cur.fetchall()
-                for r in result:
-                    q = (r['Water_Liters'])
-                    ec = (r['Water_ec'])
-            finally:
-                db.close()
+                cur = db.cursor(MySQLdb.cursors.DictCursor)
+                try:
+                    query = "SELECT * from Carousel where barrel_num = %s"
+                    cur.execute(query,[str(water)])
+                    result = cur.fetchall()
+                    for r in result:
+                        q = (r['Water_Liters'])
+                        ec = (r['Water_ec'])
+                        print("The amount is "+ str(q) + " and the ec " + str(ec))
+                finally:
+                    db.close()
+                print("ready to water")
+                count = 0
+                count2 = 0
+                if(ec == 2.3):
+                    print(str(water) + " ec 2.3")
+                    while(count/(60 *7.5) < q):
+                         print(count/(60 *7.5))
+                         irrigate_open(ec)
+                    print("calling the close function") 
+                    irrigate_close(ec)
+                elif ( ec == 0.0): 
+                    while(count2/(60 *7.5) < q):
+                        print(count2/(60*7.5))
+                        irrigate_open(ec)
+                    print( "calling the close function")
+                    irrigate_close(ec)      
+        except ValueError:
+            print(" Not a number ")
+ 
+                 
 
-            if(ec == 2.3):
-                print(rfid + " ec 2.3")
-                while(count/(60 *7.5) < q):
-                    print(count/(60 *7.5))
-                    irrigate_open(ec)
-                irrigate_close(ec)
-            elif ( ec == 0): 
-                while(count2/(60 *7.5) < q):
-                    print(count2/(60*7.5))
-                    irrigate_open(ec)
-                irrigate_close(ec)
-                print (rfid + " ec 0")            
 def irrigate_open(ec):
+    print( "opening the water")
     if(ec == 2.3):
+        print("in close for 2.3")
         GPIO.output(in1,GPIO.HIGH)
         GPIO.output(in2,GPIO.LOW)
     elif(ec == 0):
         GPIO.output(in3,GPIO.HIGH)
         GPIO.output(in4,GPIO.LOW)
+
+
 def irrigate_close(ec):
-    if(ec == 2.3):
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.HIGH)
-    elif(ec == 0):
-        GPIO.output(in3,GPIO.LOW)
-        GPIO.output(in4,GPIO.HIGH)
+    print( "closing the water")
+    GPIO.output(in1,GPIO.LOW)
+    GPIO.output(in2,GPIO.HIGH)
+   
 
 
 def setToolTip():
@@ -221,6 +236,7 @@ class Handler:
             time.sleep(5) 
 
     def pumpTwoOpen(self,sw2,data):
+        
         if sw2.get_active():
             GPIO.output(in3,GPIO.HIGH)
             GPIO.output(in4,GPIO.LOW)
@@ -297,9 +313,5 @@ if datetime.datetime.now == seven_am:
 count2 = 0
 
 Gtk.main()
-
-
-
-
-
+GPIO.cleanup() 
 
