@@ -3,7 +3,7 @@ import sys
 from gi.repository import GObject
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-import RPi.GPIO as GPIO 
+import RPi.GPIO as GPIO
 import time
 import MySQLdb
 from time import sleep
@@ -18,7 +18,7 @@ in1 = 12
 in2 = 13
 in3 = 16
 in4 = 19
-def GPIOsetup(): 
+def GPIOsetup():
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(in1,GPIO.OUT)
     GPIO.setup(in2,GPIO.OUT)
@@ -30,11 +30,18 @@ def GPIOsetup():
     GPIO.add_event_detect(17,GPIO.FALLING, callback = countPulse)
 
 
-global count 
+global count
 count = 0
 
-global count2 
+global count2
 count2 = 0
+
+newExperiment = 1
+
+
+def setLabel(number):
+    Npot_number.set_text(str(number))
+
 
 
 def countPulse(channel):
@@ -55,10 +62,10 @@ def irrigate():
    # while(pot_count < 2):
        
        while(pot_count < 2):
-        GPIO.cleanup()   
+        GPIO.cleanup()  
         reader = SimpleMFRC522()  
         print("the Pot_count is: " + str(pot_count))
-        global count,count2 
+        global count,count2
        
        
         try:
@@ -70,7 +77,7 @@ def irrigate():
             GPIO.cleanup()
         time.sleep(1)
         try:
-            if(int(rfid) > 0 and int(rfid) < 25): 
+            if(int(rfid) > 0 and int(rfid) < 25):
                 pot_count = pot_count+1
                 GPIOsetup()
                 print ("Read pot: " + rfid)
@@ -105,9 +112,10 @@ def irrigate():
                     while(count/(60 *7.5) < q):
                          print(count/(60 *7.5))
                          irrigate_open(ec)
-                    print("calling the close function") 
+                    #time.sleep(3)
+                    print("calling the close function")
                     irrigate_close(ec)
-                elif ( ec == 0.0): 
+                elif ( ec == 0.0):
                     while(count2/(60 *7.5) < q):
                         print(count2/(60*7.5))
                         irrigate_open(ec)
@@ -121,10 +129,11 @@ def irrigate():
 def irrigate_open(ec):
     print( "opening the water")
     if(ec == 2.3):
-        print("in close for 2.3")
         GPIO.output(in1,GPIO.HIGH)
         GPIO.output(in2,GPIO.LOW)
+        print("opened")
     elif(ec == 0):
+
         GPIO.output(in3,GPIO.HIGH)
         GPIO.output(in4,GPIO.LOW)
 
@@ -133,6 +142,8 @@ def irrigate_close(ec):
     print( "closing the water")
     GPIO.output(in1,GPIO.LOW)
     GPIO.output(in2,GPIO.HIGH)
+    time.sleep(5)
+    print("closed")
    
 
 
@@ -156,9 +167,31 @@ def setToolTip():
         for t in result:
             print("Number"+ str(t['Barrel_num']))
             s = " Pot Number: " + str(t['Barrel_num']) +" \n Date Planted: " + str(t['Date_planted'])+"\n Seed type: " + str(t['Seed_type']) +" \n Water EC: " + str(t['Water_ec']) +" \n Quantity: " + str(t['Water_Liters'])
-        for f in result2: 
+        for f in result2:
             s =  s + "\n Recorded Height(cm): "+ str(f['Height'])  + "\n Height recorded on: " + str(f['date_recorded'])
         temp.set_tooltip_text(s)
+
+def exportCsv2():
+        fileName = 'CSV/Carousel' +  time.strftime('%Y-%m-%d %H-%M-%S')
+        db = MySQLdb.connect(host="localhost",    # your host, usually localhost
+                     user="root",         # your username
+                     passwd="iqp2020",  # your password
+                     db="mydb")    
+        cur = db.cursor()
+
+        query = "SELECT * from Plant_records"
+        try:
+            cur.execute(query)
+            result = cur.fetchall()
+
+            for r in result:
+                print(r)
+                with open(fileName +'.csv', 'a') as Carousel:
+                    employee_writer = csv.writer(Carousel, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    employee_writer.writerow([r[0],r[1],r[2]])
+        finally:
+            cur.close
+            db.close
 
 class Handler:
     sw = Gtk.Switch()
@@ -169,7 +202,7 @@ class Handler:
         print("cleanup")
         GPIO.cleanup()
         Gtk.main_quit()
-    
+   
     def irr(self,widget):
         irrigate()
     def onButtonPressed(self, widget):
@@ -180,7 +213,7 @@ class Handler:
                      db="mydb")        # name of the data base
 
         cur = db.cursor()
-        
+       
         # Use all the SQL you like
         try:
             pot = (b.get_text())
@@ -226,49 +259,38 @@ class Handler:
             db.close()
 
     def pumpOneOpen(self,sw,data):
-        
-        if sw.get_active(): 
+       
+        if sw.get_active():
             GPIO.output(in1,GPIO.HIGH)
             GPIO.output(in2,GPIO.LOW)
         else:
             GPIO.output(in1,GPIO.LOW)
             GPIO.output(in2,GPIO.HIGH)
-            time.sleep(5) 
+            time.sleep(5)
 
     def pumpTwoOpen(self,sw2,data):
-        
+       
         if sw2.get_active():
             GPIO.output(in3,GPIO.HIGH)
             GPIO.output(in4,GPIO.LOW)
             time.sleep(5)
-        else: 
+        else:
             GPIO.output(in3,GPIO.LOW)
             GPIO.output(in4,GPIO.HIGH)
             time.sleep(5)
 
+    def next(self,widget):
+        global newExperiment
+        newExperiment = newExperiment + 1
+        print(newExperiment)
+        setLabel(newExperiment)
+        pBar.set_pulse_step((1/24)*newExperiment)
+        pBar.pulse
+
+
+
     def exportCsv(self,widget):
-
-
-        fileName = 'CSV/Carousel' +  time.strftime('%Y-%m-%d %H-%M-%S')
-        db = MySQLdb.connect(host="localhost",    # your host, usually localhost
-                     user="root",         # your username
-                     passwd="iqp2020",  # your password
-                     db="mydb")    
-        cur = db.cursor()
-
-        query = "SELECT * from Plant_records"
-        try:
-            cur.execute(query)
-            result = cur.fetchall()
-
-            for r in result:
-                print(r)
-                with open(fileName +'.csv', 'a') as Carousel:
-                    employee_writer = csv.writer(Carousel, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                    employee_writer.writerow([r[0],r[1],r[2]])
-        finally:
-            cur.close
-            db.close
+        exportCsv2()
 
 
     def warning(self,widget):
@@ -278,40 +300,71 @@ class Handler:
         window.show_all()
         warning.hide()
     def continue1(self,widget):
+        exportCsv2()
+        db = MySQLdb.connect(host="localhost",    # your host, usually localhost
+                     user="root",         # your username
+                     passwd="iqp2020",  # your password
+                     db="mydb")  
+        cur = db.cursor()
+       
+        query2 = "create table test ( a int , b int)"
+           
+        cur.execute("drop table if exists test")
+        try:
+            cur.execute(query2)
+
+        except:
+            print("Error while droping table or creating table")
+        finally:
+            db.close
+            cur.close
+        setLabel(newExperiment)
         exWind.show_all()
         warning.hide()
+   
 
+
+##################### Load XML files #####################
 builder = Gtk.Builder()
 builder.add_from_file("app.glade")
 builder.connect_signals(Handler())
-
 builder.add_from_file("warning.glade")
 builder.connect_signals(Handler())
 builder.add_from_file("newExperiment.glade")
+#################### Connect signals ####################
 builder.connect_signals(Handler())
+
 setToolTip()
 
-progress = builder.get_object("progress_bar1")
-warning = builder.get_object("window2")
-progress.set_pulse_step(0)
+################### Entry widgets #######################
+
+
+## main window
 comments = builder.get_object("comment_entry")
 combo = builder.get_object("update_pot")
 b = builder.get_object("b_entry")
 water_ec = builder.get_object("water_ec")
 q_water = builder.get_object("q_water")
 h = builder.get_object("h_entry")
+
+
+## New experiment window
+Npot_number = builder.get_object("New_pot_number")
+Nseed_type = builder.get_object("New_seed_type")
+Nwater_ec = builder.get_object("New_water_ec")
+Nwater_q = builder.get_object("New_water_quantity")
+Ndate_planted = builder.get_object("New_date_planted")
+pBar = builder.get_object("New_progress")
+pBar.set_fraction(1/24)
+
+
+################## Window widgets ######################
 window = builder.get_object("window1")
 exWind = builder.get_object("window3")
+warning = builder.get_object("window2")
+
+
+
 window.show_all()
-
-irrigation = 0
-now = datetime.datetime.now()
-seven_am = now.replace(hour=11, minute=52, second=0, microsecond=0)
-
-if datetime.datetime.now == seven_am:
-    print("timeeeeee")
-count2 = 0
-
 Gtk.main()
-GPIO.cleanup() 
-
+GPIO.cleanup()  
