@@ -4,6 +4,7 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkWindow" id="window3">
     <property name="can_focus">False</property>
+    <signal name="destroy" handler="onDestroy" swapped="no"/>
     <child>
       <placeholder/>
     </child>
@@ -36,16 +37,14 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton">
-                    <property name="label" translatable="yes">Previous</property>
+                  <object class="GtkLabel" id="New_pot_number">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="padding">93</property>
+                    <property name="padding">162</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -55,10 +54,12 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
+                    <signal name="released" handler="next" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
+                    <property name="padding">1</property>
                     <property name="position">2</property>
                   </packing>
                 </child>
@@ -71,14 +72,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSeparator">
+              <object class="GtkProgressBar" id="New_progress">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="padding">6</property>
+                <property name="padding">5</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -102,19 +103,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Pot number:</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="padding">5</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
+                    <property name="halign">end</property>
                     <property name="label" translatable="yes">Seed type:</property>
                   </object>
                   <packing>
@@ -128,6 +117,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">end</property>
                     <property name="label" translatable="yes">Water EC:</property>
                   </object>
                   <packing>
@@ -141,6 +131,7 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="halign">end</property>
                     <property name="label" translatable="yes">Water Quantity:</property>
                   </object>
                   <packing>
@@ -154,7 +145,8 @@
                   <object class="GtkLabel">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Date planted:</property>
+                    <property name="halign">end</property>
+                    <property name="label" translatable="yes">Date planted (dd-mm-yyyy):</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -176,18 +168,7 @@
                 <property name="can_focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkEntry">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="New_seed_type">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                   </object>
@@ -199,7 +180,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="New_water_ec">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                   </object>
@@ -211,7 +192,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="New_water_quantity">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                   </object>
@@ -223,7 +204,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkEntry">
+                  <object class="GtkEntry" id="New_date_planted ">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                   </object>
@@ -259,17 +240,6 @@
             <property name="fill">True</property>
             <property name="padding">5</property>
             <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkProgressBar">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
           </packing>
         </child>
       </object>
