@@ -29,7 +29,7 @@ The wiring of the system can be seen in the pictures below:
 ![Wiring Diagram of the Flowrate sensors and ball valves](/Images/diagram.png) 
 
 
-[Refer to the fritzing files for more detailed information]( /Carousel_Wiring_diagram.fzz)
+[Refer to the fritzing files for more detailed information]( /Fritzing_Files)
 
 
 # DATABASE
