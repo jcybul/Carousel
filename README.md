@@ -23,11 +23,13 @@ This project is meant to create a supplementary automatic irrigation system to t
 
 Aside from that, a soldering board extension and a soldering iron is recommended for organization
 
-The wiring of the system can be seen in the picture below:
+The wiring of the system can be seen in the pictures below:
 
-![Wiring Diagram](/Images/Carousel_Wiring_diagram_bb.png) 
+![Wiring Diagram of the RFID scanner](/Images/Carousel_Wiring_diagram_RFID.png)
+![Wiring Diagram of the Flowrate sensors and ball valves](/Images/diagram.png) 
 
-[Refer to the fritzing file for more detailed information]( /Carousel_Wiring_diagram.fzz)
+
+[Refer to the fritzing files for more detailed information]( /Carousel_Wiring_diagram.fzz)
 
 
 # DATABASE
