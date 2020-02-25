@@ -39,6 +39,27 @@ The database used for this project is a MySql database running locally on the Ra
 # USER-INTERFACE
 
 
-![UI](/Images/UI_ITERATION.png) 
+![UI](/Images/UI.png) 
 
 The user-interface was created using python, the GTK library, which is a free and open-source cross-platform widget toolkit for creating graphical user interfaces, and Glade for the design.
+
+# USER-MANUAL
+
+A user manual was created for operating the system
+![UI](/Images/1.png) 
+![UI](/Images/2.png) 
+![UI](/Images/3.png) 
+![UI](/Images/4.png) 
+![UI](/Images/5.png) 
+![UI](/Images/6.png) 
+![UI](/Images/7.png) 
+![UI](/Images/8.png) 
+![UI](/Images/9.png) 
+![UI](/Images/U10.png) 
+![UI](/Images/11.png) 
+![UI](/Images/12.png) 
+![UI](/Images/13.png) 
+![UI](/Images/14.png) 
+![UI](/Images/15.png) 
+![UI](/Images/16.png) 
+
