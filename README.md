@@ -61,5 +61,4 @@ A user manual was created for operating the system
 ![UI](/Images/13.png) 
 ![UI](/Images/14.png) 
 ![UI](/Images/15.png) 
-![UI](/Images/16.png) 
 
