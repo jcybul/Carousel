@@ -42,6 +42,9 @@ newExperiment = 1
 def setLabel(number):
     Npot_number.set_text(str(number))
 
+def doneLabel():
+    done.set_text("Done, click next to continue")
+
 
 
 def countPulse(channel):
@@ -61,13 +64,11 @@ def irrigate():
    # print ("reading")
    # while(pot_count < 2):
        
-       while(pot_count < 2):
+       while(pot_count < 24):
         GPIO.cleanup()  
         reader = SimpleMFRC522()  
         print("the Pot_count is: " + str(pot_count))
-        global count,count2
-       
-       
+        global count,count2  
         try:
             print(" Waiting to read ")
             id,rfid = reader.read()
@@ -86,7 +87,10 @@ def irrigate():
                 except ValueError:
                     print("not transformable int")
                 print("coneverted")
-                water = ((w -2) + 24 ) % 24
+                if(w != 2):
+                    water = ((w -2) + 24 ) % 24
+                else:
+                    water = 4
                 print ( "Water pot number  " + str(water))
                 time.sleep(5)
                 db = MySQLdb.connect(host="localhost",    # your host, usually localhost
@@ -166,9 +170,9 @@ def setToolTip():
         temp = builder.get_object(sstring)
         for t in result:
             print("Number"+ str(t['Barrel_num']))
-            s = " Pot Number: " + str(t['Barrel_num']) +" \n Date Planted: " + str(t['Date_planted'])+"\n Seed type: " + str(t['Seed_type']) +" \n Water EC: " + str(t['Water_ec']) +" \n Quantity: " + str(t['Water_Liters'])
+            s = " Pot Number: " + str(t['Barrel_num']) +" \n Date Planted: " + str(t['Date_planted'])+"\n Seed Type: " + str(t['Seed_type']) +" \n Water EC: " + str(t['Water_ec']) +" \n Quantity: " + str(t['Water_Liters'])
         for f in result2:
-            s =  s + "\n Recorded Height(cm): "+ str(f['Height'])  + "\n Height recorded on: " + str(f['date_recorded'])
+            s =  s + "\n Recorded Height(cm): "+ str(f['Height'])  + "\n Height Recorded on: " + str(f['date_recorded'])
         temp.set_tooltip_text(s)
 
 def exportCsv2():
@@ -178,8 +182,10 @@ def exportCsv2():
                      passwd="iqp2020",  # your password
                      db="mydb")    
         cur = db.cursor()
-
-        query = "SELECT * from Plant_records"
+        with open(fileName + '.csv','a') as Carousel:
+            title_writer = csv.writer(Carousel, delimiter = ',', quotechar = '"' , quoting = csv.QUOTE_MINIMAL)
+            title_writer.writerow(["Pot_num","Date_Recorded","Height","Comments","Datee_planted","Water_ec","Seed_Type","Water_Liters"])
+        query = "Select Plant_records.barrel_num, date_recorded, Height, Comments, Date_planted, Water_ec, Seed_type, Water_Liters from Plant_records join Carousel C on Plant_records.barrel_num = C.Barrel_num "
         try:
             cur.execute(query)
             result = cur.fetchall()
@@ -188,7 +194,7 @@ def exportCsv2():
                 print(r)
                 with open(fileName +'.csv', 'a') as Carousel:
                     employee_writer = csv.writer(Carousel, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                    employee_writer.writerow([r[0],r[1],r[2]])
+                    employee_writer.writerow([r[0],r[1],r[2],r[3],r[4],r[5],r[6],r[7]])
         finally:
             cur.close
             db.close
@@ -240,7 +246,6 @@ class Handler:
         cur = db.cursor()
 
         try:
-             
              new_water_ec = water_ec.get_text()
              new_water_q = q_water.get_text()
              combo_val = (combo.get_text())
@@ -281,11 +286,47 @@ class Handler:
 
     def next(self,widget):
         global newExperiment
-        newExperiment = newExperiment + 1
-        print(newExperiment)
-        setLabel(newExperiment)
-        pBar.set_pulse_step((1/24)*newExperiment)
-        pBar.pulse
+        num = newExperiment
+        if(num  < 25):
+            print(newExperiment)
+           
+            db = MySQLdb.connect(host="localhost",    # your host, usually localhost
+                     user="root",         # your username
+                     passwd="iqp2020",  # your password
+                     db="mydb")  
+            cur = db.cursor()
+            query = "insert into Carousel (Barrel_num,Date_planted,Water_ec,Seed_type,Water_Liters) value (%s,%s,%s,%s,%s)"#, Water_ec, Seed_type, Water_Liters) values (%s,%s,%s,%s)"
+            DatePlanted = Ndate.get_text()
+            WaterEC = Nwater_ec.get_text()
+            SeedType = Nseed_type.get_text()
+            WaterQ = Nwater_q.get_text()
+            print(DatePlanted)
+            print(WaterEC)
+            print(SeedType)
+            print(WaterQ)
+            try:
+                print(" executing ")
+                cur.execute(query,(newExperiment,DatePlanted,WaterEC,SeedType,WaterQ))
+                print(" row inserted")
+                db.commit()
+            except:
+                print("error while fetching and inserting")
+
+            finally:
+                newExperiment = newExperiment + 1
+                num = newExperiment
+                if(num < 25):
+                    setLabel(newExperiment)
+        else:
+                NewExperiment = 0
+                doneLabel()
+                Ndate.set_text("")
+                Nwater_ec.set_text("")
+                Nseed_type.set_text("")
+                Nwater_q.set_text("")
+                exWind.hide()
+                window.show_all()
+                setToolTip()
 
 
 
@@ -307,18 +348,20 @@ class Handler:
                      db="mydb")  
         cur = db.cursor()
        
-        query2 = "create table test ( a int , b int)"
-           
-        cur.execute("drop table if exists test")
+        query2 = "create table Carousel (Barrel_num int null,Date_planted date  null,Water_ec double null,Seed_type varchar(30) null,Water_Liters double null,constraint Carousel_Barrel_num_uindex unique (Barrel_num),check (`Water_ec` = 2.3 or `Water_ec` = 0))"
+        query = "create table Plant_records (barrel_num int not null,date_recorded datetime not null,Height double null,Comments varchar(200) null,primary key (barrel_num, date_recorded))"
+        cur.execute("drop table if exists Carousel")
+        cur.execute("drop table if exists Plant_records")
         try:
             cur.execute(query2)
+            cur.execute(query)
 
         except:
             print("Error while droping table or creating table")
         finally:
             db.close
             cur.close
-        setLabel(newExperiment)
+            setLabel(newExperiment)
         exWind.show_all()
         warning.hide()
    
@@ -353,16 +396,13 @@ Npot_number = builder.get_object("New_pot_number")
 Nseed_type = builder.get_object("New_seed_type")
 Nwater_ec = builder.get_object("New_water_ec")
 Nwater_q = builder.get_object("New_water_quantity")
-Ndate_planted = builder.get_object("New_date_planted")
-pBar = builder.get_object("New_progress")
-pBar.set_fraction(1/24)
-
+Ndate = builder.get_object("New_date")
+done = builder.get_object("done_text")
 
 ################## Window widgets ######################
 window = builder.get_object("window1")
 exWind = builder.get_object("window3")
 warning = builder.get_object("window2")
-
 
 
 window.show_all()
